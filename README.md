@@ -7,7 +7,7 @@
 
 # WORK IN PROGRESS
 
-## Done
+## Done/Partially Done
 ####  Making RestFul calls to the backend to acess and modify the Database
 
 ## Currently working on
