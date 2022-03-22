@@ -1,6 +1,6 @@
 # SmartNote
 
-## A Smart Reminder and Note taking app build using React-Native and Node.js
+## A Smart Reminder and Note taking app build using React-Native and Express.js
 ##### Idea is to get the reusability factor and apply it to this app. There are ton of apps like this but i still havn't found a single one that make it simple to reuse the excisting notes and make them dynamic.
 
 
