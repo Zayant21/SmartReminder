@@ -8,9 +8,9 @@
 # WORK IN PROGRESS
 
 ## Done
-### 1: Making RestFul calls to the backend to acess and modify the Database
+#### : Making RestFul calls to the backend to acess and modify the Database
 
 ## Currently working on
-#### 1: Core functionality of the app
-#### 2: Front-End Designing
-#### 3: UI for better user experience
+#### : Core functionality of the app
+#### : Front-End Designing
+#### : UI for better user experience
