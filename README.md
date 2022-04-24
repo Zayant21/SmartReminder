@@ -8,7 +8,7 @@
 # WORK IN PROGRESS
 
 ## Done/Partially Done
-####  Install: yarn install
+####  Install dependencies: yarn install
 #### Run: npx react-native run-android
 
 ## Currently working on
