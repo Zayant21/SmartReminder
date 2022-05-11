@@ -9,6 +9,7 @@ import {
   Text,
   View,
   StyleSheet,
+  Switch,
   TextInput,
 } from 'react-native';
 
@@ -16,9 +17,10 @@ import {Button, TouchableOpacity, Image} from 'react-native';
 
 import SubtaskContext, {Reminder, Subtask} from '../app/models/Schemas';
 import SubtaskListDefaultText from '../app/components/SubtaskListDefaultText';
-import AddSubtaskButton from '../app/components/AddSubtaskButton';
+import AddReminderButton from '../app/components/AddReminderButton';
 import NewReminderHeaderBar from '../app/components/NewReminderHeaderBar';
 import ReminderContent from '../app/components/ReminderContent';
+import SubtaskModal from '../app/components/SubtaskModal';
 import colors from '../app/styles/colors';
 import {Results} from 'realm';
 import NewReminderTitleAndDateTimeBar from '../app/components/NewReminderTitleAndDateTimeBar';
@@ -27,27 +29,24 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 const {useRealm, useQuery, RealmProvider} = SubtaskContext;
 
 function ReminderSubtasksScreen({route, navigation}: any) {
-  const {reminder} = route.params;
-  // console.log(reminder.subtasks);
+  const {reminderId} = route.params;
+  
   const realm = useRealm();
-  // const result = useQuery(Subtask);
+  const reminder : (Reminder & Realm.Object) | undefined = realm?.objectForPrimaryKey("Reminder", new Realm.BSON.ObjectId(reminderId))!;
   const [result, setResult] = useState(reminder.subtasks);
 
   const subtasks = useMemo(() => result, [result]);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [inputTitle, setInputTitle] = useState('');
-  const [inputFeature, setInputFeature] = useState('');
-  const [inputValue, setInputValue] = useState('');
-  const [date, setDate] = useState(new Date());
-  const [mode, setMode] = useState('date');
-  const [show, setShow] = useState(false);
+  const [hideSwitchIsEnabled, setHideSwitchIsEnabled] = useState(false);
+  const toggleSwitch = () => setHideSwitchIsEnabled(previousState => !previousState);
 
   const handleAddSubtask = useCallback(
     (_title: string, _feature: string, _value: string, _scheduledDatetime: Date): void => {
       realm.write(() => {
-        // realm.create('Subtask', Subtask.generate(_title, _feature, _value));
-        reminder.subtasks.push(Subtask.generate(_title, _feature, _value,_scheduledDatetime));
+        // const newSubtask = realm.create('Subtask', Subtask.generate(_title, _feature, _value, _scheduledDatetime));
+        // reminder.subtasks.push(newSubtask);
+        reminder.subtasks.push(Subtask.generate(_title, _feature, _value, _scheduledDatetime));
       });
     },
     [realm],
@@ -60,13 +59,15 @@ function ReminderSubtasksScreen({route, navigation}: any) {
       _feature?: string,
       _value?: string,
       _scheduledDatetime?: Date,
+      _isComplete?: boolean,
     ): void => {
       realm.write(() => {
         _title ? (subtask.title = _title) : {};
         _feature ? (subtask.feature = _feature) : {};
         _value ? (subtask.value = _value) : {};
-        _scheduledDatetime? (subtask.scheduledDatetime = _scheduledDatetime) : {};
-        // setSubtasks(result);
+        _scheduledDatetime ? (subtask.scheduledDatetime = _scheduledDatetime) : {};
+        _isComplete !== undefined? (subtask.isComplete = _isComplete) : {};
+        // setResult(reminder.subtasks);
       });
     },
     [realm],
@@ -85,41 +86,15 @@ function ReminderSubtasksScreen({route, navigation}: any) {
   );
 
   const handleModifyReminderTitle = useCallback(
-    (reminder: Reminder, _title?: string): void => {
+    (reminder: Reminder, _title?: string, _scheduledDatetime?, _isExpired?: boolean): void => {
       realm.write(() => {
         _title ? (reminder.title = _title) : {};
+        _scheduledDatetime ? (reminder.scheduledDatetime = _scheduledDatetime) : {};
+        _isExpired ? (reminder.isExpired = _isExpired) : {};
       });
     },
     [realm],
   );
-
-  const initializeSubtaskInput = () => {
-    setInputTitle('');
-    setInputFeature('');
-    setInputValue('');
-    setDate(new Date());
-  };
-
- 
-
-  const onChange = (event, selectedDate) => {
- 
-    setShow(false);
-    setDate(selectedDate);
-  };
-
-  const showMode = currentMode => {
-    setShow(true);
-    setMode(currentMode);
-  };
-
-  const showDatepicker = () => {
-    showMode('date');
-  };
-
-  const showTimepicker = () => {
-    showMode('time');
-  };
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -130,110 +105,62 @@ function ReminderSubtasksScreen({route, navigation}: any) {
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.modalRow}>
-              <Text style={styles.modalText}>Title: </Text>
-              <TextInput
-                value={inputTitle}
-                onChangeText={setInputTitle}
-                placeholder="Enter new task title"
-                autoCorrect={false}
-                autoCapitalize="none"
-                style={styles.textInput}
-              />
-            </View>
-            <View style={styles.modalRow}>
-              <Text style={styles.modalText}>Feature: </Text>
-              <TextInput
-                value={inputFeature}
-                onChangeText={setInputFeature}
-                placeholder="Add a feature"
-                autoCorrect={false}
-                autoCapitalize="none"
-                style={styles.textInput}
-              />
-            </View>
-            <View style={styles.modalRow}>
-              <Text style={styles.modalText}>Value: </Text>
-              <TextInput
-                value={inputValue}
-                onChangeText={setInputValue}
-                placeholder="Add a feature value"
-                autoCorrect={false}
-                autoCapitalize="none"
-                style={styles.textInput}
-              />
-            </View>
-
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}>
-                <Text>Select Time and Date: </Text>
-                <TouchableOpacity onPress={showDatepicker}>
-                  <Image
-                    style={styles.container}
-                    source={require('C:/Users/Zayan/Desktop/group5-reminders1/images/calendar.png')}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={showTimepicker}>
-                  <Image
-                    style={styles.container}
-                    source={require('C:/Users/Zayan/Desktop/group5-reminders1/images/clock.png')}
-                  />
-                </TouchableOpacity>
-              </View>
-              {show && (
-                <DateTimePicker
-                  testID="dateTimePicker"
-                  value={date}
-                  mode={mode}
-                  is24Hour={false}
-                  onChange={onChange}
-                />
-              )}
-            </View>
-            <Text>selected: {date.toLocaleString()}</Text>
-            <Pressable
-              style={[styles.button, styles.buttonClose]}
-              onPress={() => {
-                setModalVisible(!modalVisible);
-                handleAddSubtask(inputTitle, inputFeature, inputValue,date );
-                initializeSubtaskInput();
-              }}>
-              <Text style={styles.textStyle}>Done ✓</Text>
-            </Pressable>
-          </View>
-        </View>
+        <SubtaskModal 
+          onSubmit={() => {}}
+          handleAddSubtask={handleAddSubtask}
+          handleModifySubtask={handleModifySubtask}
+          isNew={true}
+          closeModal={() => setModalVisible(!modalVisible)}
+        />
       </Modal>
       {/* <NewReminderHeaderBar onSubmit={() => {}} /> */}
       <NewReminderTitleAndDateTimeBar
         reminder={reminder}
-        updateTitleCallback={handleModifyReminderTitle}
+        updateReminderCallback={handleModifyReminderTitle}
       />
       <View style={styles.content}>
+        <View style={styles.switchContainer}>
+          <Text>{hideSwitchIsEnabled ? "Show Completed" : "Hide Completed"}</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={hideSwitchIsEnabled ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={toggleSwitch}
+            value={hideSwitchIsEnabled}
+          />
+        </View>
         {subtasks.length === 0 ? (
           <SubtaskListDefaultText />
         ) : (
           <ReminderContent
-            subtasks={subtasks}
+            subtasks={
+              !hideSwitchIsEnabled? 
+                subtasks : subtasks.filter(subtask => !subtask.isComplete)}
             handleModifySubtask={handleModifySubtask}
             onDeleteSubtask={handleDeleteSubtask}
             onSwipeLeft={handleDeleteSubtask}
           />
         )}
-        <AddSubtaskButton onSubmit={() => setModalVisible(true)} />
+        <AddReminderButton onSubmit={() => {
+          setModalVisible(true);}} />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  switchContainer: {
+    flexDirection: "row", 
+    alignItems: "center",
+    alignContent: "center",
+    justifyContent: "center"
+  },
+  timeanddatestyle:{
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
   container: {
     resizeMode: 'center',
     height: 30,

@@ -14,16 +14,16 @@ function ReminderListDefaultText() {
 
 const styles = StyleSheet.create({
   content: {
-    flex: 1,
+    flex: 0.8,
     marginHorizontal: 20,
     justifyContent: 'center',
   },
   paragraph: {
     marginVertical: 10,
     textAlign: 'center',
-    color: 'black',
+    color: 'green',
     fontSize: 24,
-    fontWeight: 'bold',
+
   },
   link: {
     color: colors.purple,

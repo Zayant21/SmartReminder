@@ -23,12 +23,14 @@ interface ReminderListProps {
   ) => void;
   handleNavigation: (reminder: Reminder) => void;
   onDeleteReminder: (reminder: Reminder) => void;
+  onSwipeLeft: (reminder: Reminder) => void;
 }
 
 function RemindersListContent({
   reminders: reminders,
   handleModifyReminder,
   onDeleteReminder,
+  onSwipeLeft,
   handleNavigation,
 }: ReminderListProps) {
   return (
@@ -42,10 +44,12 @@ function RemindersListContent({
             handleModifyReminder={handleModifyReminder}
             handleNavigation={handleNavigation}
             onDelete={() => onDeleteReminder(item)}
+            onSwipeLeft={() => onSwipeLeft(item)}
             // Don't spread the Realm item as such: {...item}
           />
         )}
         extraData={reminders}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -53,9 +57,9 @@ function RemindersListContent({
 
 const styles = StyleSheet.create({
   subtaskListContainer: {
-    marginTop: 50,
+    marginTop: 0,
     flex: 1,
-    // justifyContent: 'center',
+    marginBottom: 40
   },
   buttonStyle: {
     justifyContent: 'center',

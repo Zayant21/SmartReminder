@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
 import {
   View,
@@ -6,31 +7,67 @@ import {
   Pressable,
   Platform,
   StyleSheet,
+  Dimensions,
 } from 'react-native';
-
+import {TouchableOpacity, Image} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {Reminder} from '../models/Schemas';
 import colors from '../styles/colors';
 
 interface NewReminderTitleAndDateTimeBarProps {
-  reminder: Reminder
-  updateTitleCallback: (
-    reminder: Reminder,
-    _title?: string,
-  ) => void;
+  reminder: Reminder;
+  updateReminderCallback: (reminder: Reminder, _title?: string, _scheduledDatetime?: Date, _isExpired?: boolean) => void;
 }
-
-function NewReminderTitleAndDateTimeBar({reminder: reminder, updateTitleCallback}: NewReminderTitleAndDateTimeBarProps) {
-
+function NewReminderTitleAndDateTimeBar({
+  reminder: reminder,
+  updateReminderCallback: updateReminderCallback,
+}: NewReminderTitleAndDateTimeBarProps): JSX.Element {
   const [titleInput, setTitleInput] = useState(reminder.title);
 
   const updateTitle = (newTitle: string) => {
     setTitleInput(newTitle);
-    updateTitleCallback(reminder, newTitle)
+    updateReminderCallback(reminder, newTitle);
   };
+ 
+  const [date, setDate] = useState(reminder.scheduledDatetime);
+  const [expired, setExpired] = useState(reminder.isExpired);
+  const [mode, setMode] = useState('date');
+  const [show, setShow] = useState(false);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate : Date = selectedDate;
+    currentDate.setSeconds(0);
+    currentDate.setMilliseconds(0);
+    setShow(false);
+    setDate(currentDate);
+    setExpired(calcTime(currentDate) < -3333333);
+    updateReminderCallback(reminder, undefined, currentDate);
+
+  };
+
+  const showMode = currentMode => {
+    setShow(true);
+    setMode(currentMode);
+  };
+
+  const showDatepicker = () => {
+    showMode('date');
+  };
+
+  const showTimepicker = () => {
+    showMode('time');
+  };
+
+  function calcTime(dt: any) {
+    let now = Date.now();
+    let end = dt;
+    let diff = (end - now);
+    return diff;
+  }
 
   return (
     <View style={styles.titlebar}>
-      <View style={styles.titleTextContainer}>
+      <View style={styles.row}>
         <TextInput
           value={titleInput}
           onChangeText={updateTitle}
@@ -40,17 +77,61 @@ function NewReminderTitleAndDateTimeBar({reminder: reminder, updateTitleCallback
           style={styles.textInput}
         />
       </View>
-
+      <View style={styles.row2}>
+        <TouchableOpacity onPress={showDatepicker}>
+          <Image
+            style={styles.container}
+            source={require('../../images/calendar.png')}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={showTimepicker}>
+          <Image
+            style={styles.container}
+            source={require('../../images/clock.png')}
+          />
+        </TouchableOpacity>
+      </View>
+      {show && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode={mode}
+          is24Hour={false}
+          onChange={onChange}
+          minimumDate={new Date(Date.now())}
+        />
+      )}
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
+  row2: {
+    flexDirection: 'row',
+    // flexWrap: 'wrap',
+    borderRadius: 5,
+    padding: 3,
+  },
+  row: {
+    flex: 1,
+    flexDirection: 'row',
+    // justifyContent: 'space-between',
+    // flexWrap: 'wrap',
+    padding: 5,
+  },
+  container: {
+    resizeMode: 'center',
+    height: 30,
+    width: 50,
+  },
   titlebar: {
-    width: "100%",
+    // width: Dimensions.get('window').width,
     height: 50,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: colors.strong,
     ...Platform.select({
       ios: {
         shadowColor: colors.black,
@@ -67,19 +148,17 @@ const styles = StyleSheet.create({
     }),
   },
   titleTextContainer: {
-    alignItems: "center",
-    justifyContent: "center"
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightblue',
   },
   titleText: {
     paddingHorizontal: 15,
     paddingVertical: Platform.OS === 'ios' ? 15 : 0,
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-  setScheduledDateTimeButton: {
-    position: "absolute",
-    right: 20
-  },
+
   icon: {
     color: colors.black,
     fontSize: 24,
@@ -87,11 +166,11 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    // textAlign: "center",
     paddingHorizontal: 8,
     paddingVertical: Platform.OS === 'ios' ? 8 : 0,
     backgroundColor: colors.white,
     fontSize: 24,
+    borderRadius: 6,
   },
 });
 

@@ -21,6 +21,8 @@ interface ReminderContentProps {
     _title?: string,
     _feature?: string,
     _value?: string,
+    _scheduledDatetime?: Date,
+    _isComplete?: boolean,
   ) => void;
   onDeleteSubtask: (subtask: Subtask) => void;
   onSwipeLeft: (subtask: Subtask) => void;
@@ -47,6 +49,7 @@ function ReminderContent({
           />
         )}
         extraData={subtasks}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -54,7 +57,7 @@ function ReminderContent({
 
 const styles = StyleSheet.create({
   subtaskListContainer: {
-    marginTop: 50,
+    marginTop: 0,
     flex: 1,
     // justifyContent: 'center',
   },

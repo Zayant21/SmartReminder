@@ -35,10 +35,11 @@ const styles = StyleSheet.create({
   floatingButtonContainer: {
     alignItems: 'center',
     justifyContent: "center",
+    alignSelf: "center",
     height: 50,
     position: "absolute",
     bottom: 20,
-    right: 20,
+    // right: 20,
     ...Platform.select({
       ios: {
         shadowColor: colors.black,
@@ -69,15 +70,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30,            
-    backgroundColor: '#ee6e73',                                    
-
+    backgroundColor: colors.dark,                                    
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.7,
+        shadowRadius: 5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   icon: {
-    color: colors.white,
+    color: colors.subtle,
     textAlign: 'center',
     fontSize: 24,
     fontWeight: 'bold',
   },
+  ...Platform.select({
+    ios: {
+      shadowColor: colors.black,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.7,
+      shadowRadius: 3,
+    },
+    android: {
+      elevation: 3,
+    },
+  }),
 });
 
 export default AddReminderButton;
